@@ -26,8 +26,7 @@ _Bool has_suffix(uint8_t * string, uint8_t * pattern);
 void clear_suffix(uint8_t * string);
 void pop_values(void);
 
-void push_instruction(uint16_t value);
-void pop_instructions(void);
+void run_instruction(void);
 
 static inline void print_help(void);
 static inline void switchr(_Bool * reg);
@@ -36,10 +35,7 @@ static inline void switchr(_Bool * reg);
 FILE * File_Read  = NULL;
 FILE * File_Write = NULL;
 
-struct {
-    uint16_t instruction[MAX_READ_SIZE];
-    size_t ptr;
-} Stack = { { 0 }, 0 };
+uint16_t Instruction = 0;;
 
 struct {
     _Bool eax;
@@ -106,7 +102,7 @@ void action_by_code(uint8_t * buffer, uint8_t abstract_code) {
 
             // write stdout
             else if (has_suffix(buffer, "41")) {
-                push_instruction(41);
+                Instruction = 41;
                 #ifdef __linux__
                     pop_values();
                     fprintf(File_Write, "\t%s\n", "push " REGISTER "ax");
@@ -130,7 +126,7 @@ void action_by_code(uint8_t * buffer, uint8_t abstract_code) {
 
         // system call
         case 5: {
-            pop_instructions();
+            run_instruction();
             #ifdef __linux__
                 fprintf(File_Write, "\t%s\n", "int 0x80");
             #elif _WIN32
@@ -144,25 +140,18 @@ void action_by_code(uint8_t * buffer, uint8_t abstract_code) {
     }
 }
 
-void push_instruction(uint16_t value) {
-    Stack.instruction[Stack.ptr] = value;
-    ++Stack.ptr;
-}
-
-void pop_instructions(void) {
-    for (ssize_t i = Stack.ptr; i >= 0; --i) {
-        if (Stack.instruction[i] == 41) {
-            #ifdef __linux__
-                fprintf(File_Write, "\t%s\n", "pop " REGISTER "dx");
-                fprintf(File_Write, "\t%s\n", "pop " REGISTER "cx");
-            #elif _WIN32
-                // Windows OS
-            #else
-                // another OS
-            #endif
-        } 
-        --Stack.ptr;
-    }
+void run_instruction(void) {
+    if (Instruction == 41) {
+        #ifdef __linux__
+            fprintf(File_Write, "\t%s\n", "pop " REGISTER "dx");
+            fprintf(File_Write, "\t%s\n", "pop " REGISTER "cx");
+        #elif _WIN32
+            // Windows OS
+        #else
+            // another OS
+        #endif
+    } 
+    Instruction = 0;
 }
 
 void pop_values(void) {
