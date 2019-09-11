@@ -5,8 +5,8 @@ section '.data' writeable
 section '.text' executable
 _start:
     mov !ax, 41
-    mov ecx, msg
-    mov edx, len
+    push msg
+    push len
     !syscall
 
     mov !ax, 10
