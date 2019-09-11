@@ -7,15 +7,16 @@
 1. [-i, --input] = input assembly file
 2. [-o, --output] = output assembly file
 
+#### AASM extensions:
+1. Register: !ax
+2. System call: !syscall
+
 #### Supported instructions:
 1. mov
 
 #### Supported operations:
 1. 10 = exit.
 2. 41 = write stdout.
-
-#### Register: !ax
-#### System call: !syscall
 
 #### AASM code:
 ```asm
