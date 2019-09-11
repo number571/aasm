@@ -60,6 +60,8 @@ section '.text' executable
 _start:
     push rax
     push rbx
+    push rcx
+    push rdx
     mov eax, 4
     mov ebx, 1
     push msg
@@ -67,6 +69,8 @@ _start:
     pop rdx
     pop rcx
     int 0x80
+    pop rdx
+    pop rcx
     pop rbx
     pop rax
 
