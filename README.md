@@ -58,25 +58,25 @@ section '.data' writeable
 
 section '.text' executable
 _start:
-	push rax
-	push rbx
-	mov eax, 4
-	mov ebx, 1
+    push rax
+    push rbx
+    mov eax, 4
+    mov ebx, 1
     push msg
     push len
-	pop rdx
-	pop rcx
-	int 0x80
-	pop rbx
-	pop rax
+    pop rdx
+    pop rcx
+    int 0x80
+    pop rbx
+    pop rax
 
-	push rax
-	push rbx
-	mov eax, 1
-	xor ebx, ebx
-	int 0x80
-	pop rbx
-	pop rax
+    push rax
+    push rbx
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
+    pop rbx
+    pop rax
 ```
 
 [ AASM from #571 ]
