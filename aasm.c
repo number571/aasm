@@ -111,10 +111,14 @@ void action_by_code(uint8_t * buffer, uint8_t abstract_code) {
                     pop_values();
                     fprintf(File_Write, "\t%s\n", "push " REGISTER "ax");
                     fprintf(File_Write, "\t%s\n", "push " REGISTER "bx");
+                    fprintf(File_Write, "\t%s\n", "push " REGISTER "cx");
+                    fprintf(File_Write, "\t%s\n", "push " REGISTER "dx");
                     fprintf(File_Write, "\t%s\n", "mov eax, 4");
                     fprintf(File_Write, "\t%s\n", "mov ebx, 1");
                     switchr(&Register.eax);
                     switchr(&Register.ebx);
+                    switchr(&Register.ecx);
+                    switchr(&Register.edx);
                 #elif _WIN32
                     // for another OS
                 #else
@@ -162,7 +166,6 @@ void pop_instructions(void) {
 }
 
 void pop_values(void) {
-    
     if (Register.edx) {
         fprintf(File_Write, "\t%s\n", "pop " REGISTER "dx");
         switchr(&Register.edx);
