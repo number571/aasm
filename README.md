@@ -1,23 +1,22 @@
 # AASM - Abstract Assembler.
 > Use one assembly system calls for different OS's.
+> AASM use dialect FASM and translated into the FASM.
 
-#### AASM use dialect FASM and translated into the FASM.
-
-### Arguments:
+#### Arguments:
 1. [-i, --input] = input assembly file
 2. [-o, --output] = output assembly file
 
-### Supported instructions:
+#### Supported instructions:
 1. mov
 
-### Supported operations:
+#### Supported operations:
 1. 10 = exit.
 2. 41 = write stdout.
 
-### Register: !ax
-### System call: !syscall
+#### Register: !ax
+#### System call: !syscall
 
-### AASM code:
+#### AASM code:
 ```asm
 section '.data' writeable
     msg db "hello, world!", 0xA, 0
@@ -34,7 +33,7 @@ _start:
     !syscall
 ```
 
-### Translation:
+#### Translation:
 ```
 $ make compile
 > gcc aasm.c -o aasm
@@ -46,7 +45,7 @@ $ make
 > hello, world!
 ```
 
-### FASM code (result):
+#### FASM code (result):
 ```asm
 format ELF64
 public _start
