@@ -1,5 +1,7 @@
 # AASM - Abstract Assembler.
-> AASM use dialect FASM and translated into the FASM.
+> Use one assembly system calls for different OS's.
+
+#### AASM use dialect FASM and translated into the FASM.
 
 ### Arguments:
 1. [-i, --input] = input assembly file
