@@ -24,6 +24,8 @@ _Bool has_contain(uint8_t * string, uint8_t * pattern);
 _Bool has_suffix(uint8_t * string, uint8_t * pattern);
 
 void clear_suffix(uint8_t * string);
+
+void push_values(_Bool eax, _Bool ebx, _Bool ecx, _Bool edx);
 void pop_values(void);
 
 void run_instruction(void);
@@ -31,12 +33,15 @@ void run_instruction(void);
 static inline void print_help(void);
 static inline void switchr(_Bool * reg);
 
+_Bool value_10(uint8_t * buffer);
+_Bool value_32(uint8_t * buffer);
+_Bool value_41(uint8_t * buffer);
+
 // Global variables
 FILE * File_Read  = NULL;
 FILE * File_Write = NULL;
 
-uint16_t Instruction = 0;;
-
+uint16_t Instruction = 0;
 struct {
     _Bool eax;
     _Bool ebx;
@@ -60,7 +65,7 @@ void parse_code(void) {
     #ifdef __linux__
         fprintf(File_Write, "%s\n%s\n\n", "format ELF64", "public _start");
     #elif _WIN32
-        fprintf(File_Write, "%s\n%s\n\n", "format PE64", "public _start");
+        // Windows OS
     #else
         // another OS
     #endif
@@ -79,48 +84,9 @@ void action_by_code(uint8_t * buffer, uint8_t abstract_code) {
         // register
         case 1: {
             clear_suffix(buffer);
-
-            // exit
-            if (has_suffix(buffer, "10")) {
-                #ifdef __linux__
-                    pop_values();
-                    fprintf(File_Write, "\t%s\n", "push " REGISTER "ax");
-                    fprintf(File_Write, "\t%s\n", "push " REGISTER "bx");
-                    fprintf(File_Write, "\t%s\n", "mov eax, 1");
-                    fprintf(File_Write, "\t%s\n", "xor ebx, ebx");
-                    switchr(&Register.eax);
-                    switchr(&Register.ebx);
-                #elif _WIN32
-                    pop_values();
-                    fprintf(File_Write, "\t%s\n", "push " REGISTER "ax");
-                    fprintf(File_Write, "\t%s\n", "mov eax, 4C00");
-                    switchr(&Register.eax);
-                #else
-                    // another OS
-                #endif
-            }
-
-            // write stdout
-            else if (has_suffix(buffer, "41")) {
-                Instruction = 41;
-                #ifdef __linux__
-                    pop_values();
-                    fprintf(File_Write, "\t%s\n", "push " REGISTER "ax");
-                    fprintf(File_Write, "\t%s\n", "push " REGISTER "bx");
-                    fprintf(File_Write, "\t%s\n", "push " REGISTER "cx");
-                    fprintf(File_Write, "\t%s\n", "push " REGISTER "dx");
-                    fprintf(File_Write, "\t%s\n", "mov eax, 4");
-                    fprintf(File_Write, "\t%s\n", "mov ebx, 1");
-                    switchr(&Register.eax);
-                    switchr(&Register.ebx);
-                    switchr(&Register.ecx);
-                    switchr(&Register.edx);
-                #elif _WIN32
-                    // for another OS
-                #else
-                    // another OS
-                #endif
-            }
+            if (value_10(buffer)) { break; } // exit
+            if (value_32(buffer)) { break; } // read stdin
+            if (value_41(buffer)) { break; } // write stdout
         }
         break;
 
@@ -130,7 +96,7 @@ void action_by_code(uint8_t * buffer, uint8_t abstract_code) {
             #ifdef __linux__
                 fprintf(File_Write, "\t%s\n", "int 0x80");
             #elif _WIN32
-                fprintf(File_Write, "\t%s\n", "int 0x21");
+                // Windows OS
             #else
                 // another OS
             #endif
@@ -140,8 +106,61 @@ void action_by_code(uint8_t * buffer, uint8_t abstract_code) {
     }
 }
 
+_Bool value_10(uint8_t * buffer) {
+    if (has_suffix(buffer, "10")) {
+        #ifdef __linux__
+            pop_values();
+            push_values(1, 1, 0, 0);
+            fprintf(File_Write, "\t%s\n", "mov eax, 1");
+            fprintf(File_Write, "\t%s\n", "xor ebx, ebx");
+        #elif _WIN32
+            // Windows OS
+        #else
+            // another OS
+        #endif
+        return 1;
+    }
+    return 0;
+}
+
+_Bool value_32(uint8_t * buffer) {
+    if (has_suffix(buffer, "32")) {
+        Instruction = 32;
+        #ifdef __linux__
+            pop_values();
+            push_values(1, 1, 1, 1);
+            fprintf(File_Write, "\t%s\n", "mov eax, 3");
+            fprintf(File_Write, "\t%s\n", "mov ebx, 2");
+        #elif _WIN32
+            // Windows OS
+        #else
+            // another OS
+        #endif
+        return 1;
+    }
+    return 0;
+}
+
+_Bool value_41(uint8_t * buffer) {
+    if (has_suffix(buffer, "41")) {
+        Instruction = 41;
+        #ifdef __linux__
+            pop_values();
+            push_values(1, 1, 1, 1);
+            fprintf(File_Write, "\t%s\n", "mov eax, 4");
+            fprintf(File_Write, "\t%s\n", "mov ebx, 1");
+        #elif _WIN32
+            // Windows OS
+        #else
+            // another OS
+        #endif
+        return 1;
+    }
+    return 0;
+}
+
 void run_instruction(void) {
-    if (Instruction == 41) {
+    if (Instruction == 32 || Instruction == 41) {
         #ifdef __linux__
             fprintf(File_Write, "\t%s\n", "pop " REGISTER "dx");
             fprintf(File_Write, "\t%s\n", "pop " REGISTER "cx");
@@ -152,6 +171,25 @@ void run_instruction(void) {
         #endif
     } 
     Instruction = 0;
+}
+
+void push_values(_Bool eax, _Bool ebx, _Bool ecx, _Bool edx) {
+    if (eax) {
+        fprintf(File_Write, "\t%s\n", "push " REGISTER "ax");
+        switchr(&Register.eax);
+    }
+    if (ebx) {
+        fprintf(File_Write, "\t%s\n", "push " REGISTER "bx");
+        switchr(&Register.ebx);
+    }
+    if (ecx) {
+        fprintf(File_Write, "\t%s\n", "push " REGISTER "cx");
+        switchr(&Register.ecx);
+    }
+    if (edx) {
+        fprintf(File_Write, "\t%s\n", "push " REGISTER "dx");
+        switchr(&Register.edx);
+    }
 }
 
 void pop_values(void) {
@@ -286,10 +324,15 @@ uint8_t init_args(int argc, char const *argv[]) {
         return 3;
     }
 
+    if (strcmp(input_file, output_file) == 0) {
+        printf("[!] Input and output files have the same name\n");
+        return 4;
+    }
+
     File_Write = fopen(output_file, "w");
     if (File_Write == NULL) {
         printf("[!] Can't get descriptor from '%s'\n", output_file);
-        return 4;
+        return 5;
     }
 
     return 0;
