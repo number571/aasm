@@ -27,8 +27,8 @@ section '.data' writeable
 section '.text' executable
 _start:
     mov !ax, 41
-    mov ecx, msg
-    mov edx, len
+    push msg
+    push len
     !syscall
 
     mov !ax, 10
@@ -58,21 +58,25 @@ section '.data' writeable
 
 section '.text' executable
 _start:
-    push rax
-    push rbx
-    mov eax, 4
-    mov ebx, 1
-    mov ecx, msg
-    mov edx, len
-    int 0x80
-    pop rbx
-    pop rax
+	push rax
+	push rbx
+	mov eax, 4
+	mov ebx, 1
+    push msg
+    push len
+	pop rdx
+	pop rcx
+	int 0x80
+	pop rbx
+	pop rax
 
-    push rax
-    push rbx
-    mov eax, 1
-    xor ebx, ebx
-    int 0x80
-    pop rbx
-    pop rax
+	push rax
+	push rbx
+	mov eax, 1
+	xor ebx, ebx
+	int 0x80
+	pop rbx
+	pop rax
 ```
+
+[ AASM from #571 ]
